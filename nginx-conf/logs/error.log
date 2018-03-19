@@ -1,0 +1,39 @@
+2018/01/23 21:30:36 [emerg] 8837#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:30:36 [emerg] 8837#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:30:36 [emerg] 8837#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:30:36 [emerg] 8837#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:30:36 [emerg] 8837#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:30:36 [emerg] 8837#0: still could not bind()
+2018/01/23 21:30:56 [notice] 8843#0: signal process started
+2018/01/23 21:34:53 [notice] 8879#0: signal process started
+2018/01/23 21:34:59 [notice] 8887#0: signal process started
+2018/01/23 21:39:05 [emerg] 8913#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:39:05 [emerg] 8913#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:39:05 [emerg] 8913#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:39:05 [emerg] 8913#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:39:05 [emerg] 8913#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/01/23 21:39:05 [emerg] 8913#0: still could not bind()
+2018/01/23 21:41:02 [notice] 8920#0: signal process started
+2018/01/23 21:41:54 [notice] 8934#0: signal process started
+2018/01/23 21:46:39 [notice] 8965#0: signal process started
+2018/03/06 23:38:20 [emerg] 9991#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/03/06 23:38:20 [emerg] 9991#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/03/06 23:38:20 [emerg] 9991#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/03/06 23:38:20 [emerg] 9991#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/03/06 23:38:20 [emerg] 9991#0: bind() to 0.0.0.0:80 failed (98: Address already in use)
+2018/03/06 23:38:20 [emerg] 9991#0: still could not bind()
+2018/03/06 23:41:40 [notice] 10039#0: signal process started
+2018/03/06 23:43:54 [notice] 10054#0: signal process started
+2018/03/07 08:50:05 [emerg] 3084#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:50:05 [emerg] 3084#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:50:05 [emerg] 3084#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:50:05 [emerg] 3084#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:50:05 [emerg] 3084#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:50:05 [emerg] 3084#0: still could not bind()
+2018/03/07 08:53:00 [emerg] 3122#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:53:00 [emerg] 3122#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:53:00 [emerg] 3122#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:53:00 [emerg] 3122#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:53:00 [emerg] 3122#0: bind() to 0.0.0.0:8080 failed (98: Address already in use)
+2018/03/07 08:53:00 [emerg] 3122#0: still could not bind()
+2018/03/10 14:40:40 [emerg] 9618#0: invalid event type "select" in /usr/local/nginx/conf/nginx.conf:17
