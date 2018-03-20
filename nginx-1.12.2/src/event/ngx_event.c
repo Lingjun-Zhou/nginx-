@@ -173,7 +173,12 @@ static ngx_event_module_t  ngx_event_core_module_ctx = {
     { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
-
+/**
+ * Event核心模块
+ * ngx_event_module_init：模块初始化
+ * ngx_event_process_init：进程初始化
+ * 类型：NGX_EVENT_MODULE
+ */
 ngx_module_t  ngx_event_core_module = {
     NGX_MODULE_V1,
     &ngx_event_core_module_ctx,            /* module context */
@@ -181,7 +186,7 @@ ngx_module_t  ngx_event_core_module = {
     NGX_EVENT_MODULE,                      /* module type */
     NULL,                                  /* init master */
     ngx_event_module_init,                 /* init module */
-    ngx_event_process_init,                /* init process */
+    ngx_event_process_init,                /* init process 通过这个回调函数，进行event的初始化。*/
     NULL,                                  /* init thread */
     NULL,                                  /* exit thread */
     NULL,                                  /* exit process */
@@ -214,46 +219,46 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
 
 #endif
     }
-	/* 
-	   ngx_use_accept_mutex变量代表是否使用accept互斥体 
-	   默认是使用，可以通过accept_mutex off;指令关闭； 
-	   accept mutex 的作用就是避免惊群，同时实现负载均衡 
-	   */  
+	/*
+	   ngx_use_accept_mutex变量代表是否使用accept互斥体
+	   默认是使用，可以通过accept_mutex off;指令关闭；
+	   accept mutex 的作用就是避免惊群，同时实现负载均衡
+	   */
     if (ngx_use_accept_mutex) {
-		/* 
-        ngx_accept_disabled变量在ngx_event_accept函数中计算。 
-        如果ngx_accept_disabled大于0，就表示该进程接受的链接过多， 
-        因此放弃一次争抢accept mutex的机会，同时将自己减一。 
-        然后，继续处理已有连接上的事件。 
-        nginx就利用这一点实现了继承关于连接的基本负载均衡。 
-        */  
+		/*
+        ngx_accept_disabled变量在ngx_event_accept函数中计算。
+        如果ngx_accept_disabled大于0，就表示该进程接受的链接过多，
+        因此放弃一次争抢accept mutex的机会，同时将自己减一。
+        然后，继续处理已有连接上的事件。
+        nginx就利用这一点实现了继承关于连接的基本负载均衡。
+        */
         if (ngx_accept_disabled > 0) {
             ngx_accept_disabled--;
 
         } else {
-			/* 
-            尝试锁accept mutex，只有成功获取锁的进程，才会将listen套接字放到epoll中。 
-            因此，这就保证了只有一个进程拥有监听套接口，故所有进程阻塞在epoll_wait时， 
-            才不会惊群现象。 
-            */  
+			/*
+            尝试锁accept mutex，只有成功获取锁的进程，才会将listen套接字放到epoll中。
+            因此，这就保证了只有一个进程拥有监听套接口，故所有进程阻塞在epoll_wait时，
+            才不会惊群现象。
+            */
             if (ngx_trylock_accept_mutex(cycle) == NGX_ERROR) {
                 return;
             }
 
             if (ngx_accept_mutex_held) {
-				/* 
-                如果进程获得了锁，将添加一个 NGX_POST_EVENTS 标志。 
-                这个标志的作用是将所有产生的事件放入一个队列中，等释放后，在慢慢来处理事件。 
-                因为，处理时间可能会很耗时，如果不先施放锁再处理的话，该进程就长时间霸占了锁， 
-                导致其他进程无法获取锁，这样accept的效率就低了。 
-                */  
+				/*
+                如果进程获得了锁，将添加一个 NGX_POST_EVENTS 标志。
+                这个标志的作用是将所有产生的事件放入一个队列中，等释放后，在慢慢来处理事件。
+                因为，处理时间可能会很耗时，如果不先施放锁再处理的话，该进程就长时间霸占了锁，
+                导致其他进程无法获取锁，这样accept的效率就低了。
+                */
                 flags |= NGX_POST_EVENTS;
 
             } else {
-				/* 
-                没有获得所得进程，当然不需要NGX_POST_EVENTS标志。 
-                但需要设置延时多长时间，再去争抢锁。 
-                */  
+				/*
+                没有获得所得进程，当然不需要NGX_POST_EVENTS标志。
+                但需要设置延时多长时间，再去争抢锁。
+                */
                 if (timer == NGX_TIMER_INFINITE
                     || timer > ngx_accept_mutex_delay)
                 {
@@ -264,39 +269,39 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
     }
 
     delta = ngx_current_msec;
-	/*接下来，epoll要开始wait事件， 
-    ngx_process_events的具体实现是对应到epoll模块中的ngx_epoll_process_events函数 
-    这里之后会详细讲解的哦 
-    */  
+	/*接下来，epoll要开始wait事件，
+    ngx_process_events的具体实现是对应到epoll模块中的ngx_epoll_process_events函数
+    这里之后会详细讲解的哦
+    */
 
     (void) ngx_process_events(cycle, timer, flags);
-    //统计本次wait事件的耗时 
-    
+    //统计本次wait事件的耗时
+
 	delta = ngx_current_msec - delta;
 
     ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle->log, 0,
                    "timer delta: %M", delta);
-	/* 
-    ngx_posted_accept_events是一个事件队列，暂存epoll从监听套接口wait到的accept事件。 
-    前文提到的NGX_POST_EVENTS标志被使用后，会将所有的accept事件暂存到这个队列 
-    */  
+	/*
+    ngx_posted_accept_events是一个事件队列，暂存epoll从监听套接口wait到的accept事件。
+    前文提到的NGX_POST_EVENTS标志被使用后，会将所有的accept事件暂存到这个队列
+    */
     ngx_event_process_posted(cycle, &ngx_posted_accept_events);
-	//所有accept事件处理完之后，如果持有锁的话，就释放掉。  
-    
+	//所有accept事件处理完之后，如果持有锁的话，就释放掉。
+
 	if (ngx_accept_mutex_held) {
         ngx_shmtx_unlock(&ngx_accept_mutex);
     }
-	/* 
-	   delta是之前统计的耗时，存在毫秒级的耗时，就对所有时间的timer进行检查， 
-	   如果timeout 就从time rbtree中删除到期的timer，同时调用相应事件的handler函数处理 
-	   */  
+	/*
+	   delta是之前统计的耗时，存在毫秒级的耗时，就对所有时间的timer进行检查，
+	   如果timeout 就从time rbtree中删除到期的timer，同时调用相应事件的handler函数处理
+	   */
     if (delta) {
         ngx_event_expire_timers();
     }
-	/* 
-	   处理普通事件(连接上获得的读写事件)， 
-	   因为每个事件都有自己的handler方法， 
-	   */  
+	/*
+	   处理普通事件(连接上获得的读写事件)，
+	   因为每个事件都有自己的handler方法，
+	   */
     ngx_event_process_posted(cycle, &ngx_posted_events);
 }
 
@@ -604,7 +609,9 @@ ngx_timer_signal_handler(int signo)
 
 #endif
 
-
+/**
+ * Event模块的进程初始化
+ */
 static ngx_int_t
 ngx_event_process_init(ngx_cycle_t *cycle)
 {
@@ -618,7 +625,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
 // 获取相应模块的配置结构
     ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
     ecf = ngx_event_get_conf(cycle->conf_ctx, ngx_event_core_module);
- // 判断是否使用mutex锁，主要是为了控制负载均衡。ccf->master主要确定下是否是master-worker模式。单进程模式就不需要进行下面操作了。
+ // 判断是否使用mutex锁，主要是为了控制负载均衡。ccf->master主要确定下是否是master-worker模式。单进程模式就不需要进行下面操作了。/* 多进程情况下，进程数大于1的情况，使用accept_mutex锁。惊群的时候需要用到。*/
     if (ccf->master && ccf->worker_processes > 1 && ecf->accept_mutex) {
         ngx_use_accept_mutex = 1;//使用mutex控制进程的负载均衡
         ngx_accept_mutex_held = 0;
@@ -638,14 +645,18 @@ ngx_event_process_init(ngx_cycle_t *cycle)
     ngx_use_accept_mutex = 0;
 
 #endif
-
+  /* 初始化全局队列：ngx_posted_accept_events和ngx_posted_events */
     ngx_queue_init(&ngx_posted_accept_events);
     ngx_queue_init(&ngx_posted_events);
- //定时器初始化
+ //定时器初始化,初始化event模块的时间
     if (ngx_event_timer_init(cycle->log) == NGX_ERROR) {
         return NGX_ERROR;
     }
  //event module的初始化
+ /**
+    * 找到事件模型的模块，例如epoll/kqueue
+    */
+
     for (m = 0; cycle->modules[m]; m++) {
         if (cycle->modules[m]->type != NGX_EVENT_MODULE) {
             continue;
@@ -657,6 +668,10 @@ ngx_event_process_init(ngx_cycle_t *cycle)
 
         module = cycle->modules[m]->ctx;
 //初始化模块
+/**
+         * 调用epoll/kqueue等模型模块的init初始化函数
+         * epoll调用的是ngx_epoll_init这个方法
+         */
         if (module->actions.init(cycle, ngx_timer_resolution) != NGX_OK) {
             /* fatal */
             exit(2);
@@ -720,7 +735,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
     }
 
 #endif
-//创建连接池。现在已经是在worker中了，所以每个worker都有自己的connection数组
+//创建连接池。现在已经是在worker中了，所以每个worker都有自己的connection数组.分配一块内存，存储连接
     cycle->connections =
         ngx_alloc(sizeof(ngx_connection_t) * cycle->connection_n, cycle->log);
     if (cycle->connections == NULL) {
@@ -728,7 +743,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
     }
 
     c = cycle->connections;
-//创建所有读事件
+//创建所有读事件,分配一块内存，存放读取事件
     cycle->read_events = ngx_alloc(sizeof(ngx_event_t) * cycle->connection_n,
                                    cycle->log);
     if (cycle->read_events == NULL) {
@@ -740,7 +755,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
         rev[i].closed = 1;
         rev[i].instance = 1;//防止stale event
     }
- //创建写事件
+ //创建写事件, 分配一块内存，存储写入事件
     cycle->write_events = ngx_alloc(sizeof(ngx_event_t) * cycle->connection_n,
                                     cycle->log);
     if (cycle->write_events == NULL) {
@@ -754,7 +769,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
 
     i = cycle->connection_n;
     next = NULL;
- //初始化连接池
+ //初始化连接池,初始化连接数据
     do {
         i--;
 	//链表
@@ -765,14 +780,14 @@ ngx_event_process_init(ngx_cycle_t *cycle)
 
         next = &c[i];
     } while (i);
-//设置free 连接
+//设置free 连接,空闲的连接
     cycle->free_connections = next;
     cycle->free_connection_n = cycle->connection_n;
 
-    /* for each listening socket */
+    /* for each listening socket ,初始化侦听器 */
 	//下面这段初始化listen 事件 ，创建socket句柄，绑定事件回调，然后加入到事件驱动中
     ls = cycle->listening.elts; // 为每一个监听套接字从connection数组中分配一个连接，即一个slot
-    for (i = 0; i < cycle->listening.nelts; i++) {//开始遍历listen 
+    for (i = 0; i < cycle->listening.nelts; i++) {//开始遍历listen
 
 #if (NGX_HAVE_REUSEPORT)
         if (ls[i].reuseport && ls[i].worker != ngx_worker) {
